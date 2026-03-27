@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/MinoKim82/go-kis-cli/config"
 	"github.com/go-resty/resty/v2"
@@ -21,6 +22,10 @@ func NewClient() (*KISClient, error) {
 	}
 
 	rc := resty.New()
+	// Allow httpmock to intercept resty
+	if config.EnvName == "test" || config.EnvName == "mock" {
+		rc.SetTransport(http.DefaultTransport)
+	}
 	rc.SetBaseURL(config.GetBaseURL())
 	rc.SetHeader("Content-Type", "application/json; charset=utf-8")
 
