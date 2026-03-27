@@ -63,8 +63,44 @@ var balanceCmd = &cobra.Command{
 	},
 }
 
+var buyCmd = &cobra.Command{
+	Use:   "buy [stock_code] [qty] [price]",
+	Short: "Buy a domestic stock",
+	Long:  `Buy a domestic stock at the specified price. Use 0 for market price.`,
+	Args:  cobra.ExactArgs(3),
+	Run: func(cmd *cobra.Command, args []string) {
+		code, qty, price := args[0], args[1], args[2]
+		resp, err := domestic.BuyOrder(code, qty, price)
+		if err != nil {
+			fmt.Printf("Buy Order Failed: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Buy Order Placed Successfully!\n")
+		fmt.Printf("Order No: %s | Time: %s\n", resp.Output.ODNO, resp.Output.ORD_TMD)
+	},
+}
+
+var sellCmd = &cobra.Command{
+	Use:   "sell [stock_code] [qty] [price]",
+	Short: "Sell a domestic stock",
+	Long:  `Sell a domestic stock at the specified price. Use 0 for market price.`,
+	Args:  cobra.ExactArgs(3),
+	Run: func(cmd *cobra.Command, args []string) {
+		code, qty, price := args[0], args[1], args[2]
+		resp, err := domestic.SellOrder(code, qty, price)
+		if err != nil {
+			fmt.Printf("Sell Order Failed: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Sell Order Placed Successfully!\n")
+		fmt.Printf("Order No: %s | Time: %s\n", resp.Output.ODNO, resp.Output.ORD_TMD)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(domesticCmd)
 	domesticCmd.AddCommand(quoteCmd)
 	domesticCmd.AddCommand(balanceCmd)
+	domesticCmd.AddCommand(buyCmd)
+	domesticCmd.AddCommand(sellCmd)
 }
