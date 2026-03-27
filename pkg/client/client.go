@@ -29,3 +29,33 @@ func NewClient() (*KISClient, error) {
 		Profile:     profile,
 	}, nil
 }
+
+// Request is a wrapper around the resty request, automatically injecting required headers.
+// trID is the transaction ID representing the KIS API endpoint behavior.
+func (c *KISClient) Request(trID string, token string) *resty.Request {
+	req := c.RestyClient.R().
+		SetHeader("authorization", fmt.Sprintf("Bearer %s", token)).
+		SetHeader("appkey", c.Profile.AppKey).
+		SetHeader("appsecret", c.Profile.AppSecret).
+		SetHeader("tr_id", trID)
+
+	req.SetHeader("custtype", "P")
+	return req
+}
+
+// KISError represents a standard error response from the Korea Investment REST API.
+type KISError struct {
+	RtCd  string `json:"rt_cd"`
+	MsgCd string `json:"msg_cd"`
+	Msg1  string `json:"msg1"`
+}
+
+func (e *KISError) Error() string {
+	return fmt.Sprintf("KIS API Error [%s]: %s", e.MsgCd, e.Msg1)
+}
+
+// IsSuccess checks the standard rt_cd field from a generic map response.
+// KIS API returns rt_cd == "0" on success.
+func IsSuccess(rtCd string) bool {
+	return rtCd == "0"
+}
